@@ -42,7 +42,7 @@ Because each mesh will use its own root certificate authority and configured to 
 #### Deploying the control planes
 
 1. Create the system namespace `istio-system1` and deploy the `mesh1` control plane in it.
-   ```bash { name=deploy-mesh1 tag=multiple-meshes}
+```bash { name=deploy-mesh1 tag=multiple-meshes}
    kubectl create namespace istio-system1
    kubectl label ns istio-system1 mesh=mesh1
    kubectl apply -f - <<EOF
@@ -59,14 +59,14 @@ Because each mesh will use its own root certificate authority and configured to 
          - matchLabels:
              mesh: mesh1
    EOF
-   ```
+```
 <!-- ```bash { name=validation-wait-istio-pods tag=multiple-meshes}
     . scripts/prebuilt-func.sh
     wait_istio_ready "istio-system1"
     kubectl get pods -n istio-system1
 ``` -->
 2. Create the system namespace `istio-system2` and deploy the `mesh2` control plane in it.
-   ```bash { name=deploy-mesh2 tag=multiple-meshes}
+```bash { name=deploy-mesh2 tag=multiple-meshes}
    kubectl create namespace istio-system2
    kubectl label ns istio-system2 mesh=mesh2
    kubectl apply -f - <<EOF
@@ -83,14 +83,14 @@ Because each mesh will use its own root certificate authority and configured to 
          - matchLabels:
              mesh: mesh2
    EOF
-   ```
+```
 <!-- ```bash { name=validation-wait-istio-pods tag=multiple-meshes}
     . scripts/prebuilt-func.sh
     wait_istio_ready "istio-system2"
     kubectl get pods -n istio-system2
 ``` -->
 3. Create a peer authentication policy that only allows mTLS communication within each mesh.
-   ```bash { name=peer-authentication tag=multiple-meshes}
+```bash { name=peer-authentication tag=multiple-meshes}
    kubectl apply -f - <<EOF
    apiVersion: security.istio.io/v1
    kind: PeerAuthentication
@@ -112,34 +112,34 @@ Because each mesh will use its own root certificate authority and configured to 
      mtls:
        mode: STRICT
    EOF
-   ```  
+```  
 
 #### Verifying the control planes
 
 1. Check the labels on the control plane namespaces:
-   ```console
+```console
    $ kubectl get ns -l mesh -L mesh
    NAME            STATUS   AGE    MESH
    istio-system1   Active   106s   mesh1
    istio-system2   Active   105s   mesh2
-   ```
+```
 <!-- ```bash { name=validation-control-planes-ns tag=multiple-meshes}
    kubectl get ns -l mesh -L mesh
    kubectl get pods -n istio-system1
    kubectl get pods -n istio-system2
 ``` -->
 2. Check the control planes are `Healthy`:
-   ```console
+```console
    $ kubectl get istios
    NAME    REVISIONS   READY   IN USE   ACTIVE REVISION   STATUS    VERSION   AGE
    mesh1   1           1       0        mesh1             Healthy   v1.24.0   84s
    mesh2   1           1       0        mesh2             Healthy   v1.24.0   77s
-   ```
+```
 <!-- ```bash { name=validation-istios tag=multiple-meshes}
    kubectl get istios
 ``` -->
 3. Confirm that the validation and mutation webhook configurations exist for both meshes:
-   ```console
+```console
    $ kubectl get validatingwebhookconfigurations
    NAME                                  WEBHOOKS   AGE
    istio-validator-mesh1-istio-system1   1          2m45s
@@ -149,7 +149,7 @@ Because each mesh will use its own root certificate authority and configured to 
    NAME                                         WEBHOOKS   AGE
    istio-sidecar-injector-mesh1-istio-system1   2          5m55s
    istio-sidecar-injector-mesh2-istio-system2   2          5m48s
-   ```
+```
 <!-- ```bash { name=validation-webhook-configs tag=multiple-meshes}
    kubectl get validatingwebhookconfigurations
    kubectl get mutatingwebhookconfigurations
@@ -157,28 +157,28 @@ Because each mesh will use its own root certificate authority and configured to 
 #### Deploying the applications
 
 1. Create three application namespaces:
-   ```bash { name=create-app-namespaces tag=multiple-meshes}
+```bash { name=create-app-namespaces tag=multiple-meshes}
    kubectl create ns app1 
    kubectl create ns app2a 
    kubectl create ns app2b
-   ```
+```
 
 2. Label each namespace to enable discovery by the corresponding control plane:
-   ```bash { name=label-app-namespaces tag=multiple-meshes}
+```bash { name=label-app-namespaces tag=multiple-meshes}
    kubectl label ns app1 mesh=mesh1
    kubectl label ns app2a mesh=mesh2
    kubectl label ns app2b mesh=mesh2
-   ```
+```
 
 3. Label each namespace to enable injection by the corresponding control plane:
-   ```bash { name=label-rev-app-namespaces tag=multiple-meshes}
+```bash { name=label-rev-app-namespaces tag=multiple-meshes}
    kubectl label ns app1 istio.io/rev=mesh1
    kubectl label ns app2a istio.io/rev=mesh2
    kubectl label ns app2b istio.io/rev=mesh2
-   ```
+```
 
 4. Deploy the `curl` and `httpbin` sample applications in each namespace:
-   ```bash { name=deploy-apps tag=multiple-meshes}
+```bash { name=deploy-apps tag=multiple-meshes}
    # Deploy curl and httpbin in app1
    kubectl -n app1 apply -f https://raw.githubusercontent.com/istio/istio/refs/heads/master/samples/curl/curl.yaml 
    kubectl -n app1 apply -f https://raw.githubusercontent.com/istio/istio/refs/heads/master/samples/httpbin/httpbin.yaml 
@@ -188,7 +188,7 @@ Because each mesh will use its own root certificate authority and configured to 
    # Deploy curl and httpbin in app2b
    kubectl -n app2b apply -f https://raw.githubusercontent.com/istio/istio/refs/heads/master/samples/curl/curl.yaml 
    kubectl -n app2b apply -f https://raw.githubusercontent.com/istio/istio/refs/heads/master/samples/httpbin/httpbin.yaml 
-   ```
+```
 <!-- ```bash { name=validation-app-deployed tag=multiple-meshes}
     . scripts/prebuilt-func.sh
     with_retries wait_pods_ready_by_ns "app1"
@@ -202,7 +202,7 @@ Because each mesh will use its own root certificate authority and configured to 
     with_retries pods_istio_version_match "app2b" "1.24.0" "istio-system2"
 ``` -->
 5. Confirm that a sidecar has been injected into each of the application pods. The value `2/2` should be displayed in the `READY` column for each pod, as in the following example:
-   ```console
+```console
    $ kubectl get pods -n app1
    NAME                       READY   STATUS    RESTARTS   AGE
    curl-5b549b49b8-mg7nl      2/2     Running   0          102s
@@ -217,7 +217,7 @@ Because each mesh will use its own root certificate authority and configured to 
    NAME                       READY   STATUS    RESTARTS   AGE
    curl-5b549b49b8-xnzzk      2/2     Running   0          2m9s
    httpbin-7b549f7859-7k5gf   2/2     Running   0          118s
-   ```
+```
 
 ### Validation
 
