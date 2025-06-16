@@ -1,0 +1,5 @@
+{{ if .Values.bundleGeneration }}
+{{ .Files.Get "samples/istio-sample.yaml" }}
+---
+{{ .Files.Get "samples/istiocni-sample.yaml" }}
+{{ end }}
